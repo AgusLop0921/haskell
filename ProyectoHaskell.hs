@@ -32,39 +32,20 @@ adicionACinta (cinta, proximoEstado, posicion)
     | posicion == (length cinta) = (cinta ++ [""], proximoEstado, posicion)
     | otherwise = (cinta, proximoEstado, posicion)
 
-ejecutar :: Maquina -> Alfabeto -> Cinta -> String -> IO ()
-ejecutar maquina alfabeto cinta estadoInicial = bucle 0 maquina alfabeto cinta estadoInicial 0
+ejecutar :: Maquina -> Alfabeto -> Cinta -> String -> Int -> IO ()
+ejecutar maquina alfabeto cinta estadoInicial paso = bucle 0 paso maquina alfabeto cinta estadoInicial 0
 
-bucle :: Int -> Maquina -> Alfabeto -> Cinta -> String -> Int -> IO ()
-bucle i maquina alfabeto cinta estadoInicial posicion =
-                           do  putStr ("Estado " ++ show i ++ ". Cinta: [" ++ mostrarCinta cinta posicion "" 0 ++ "]" ++ "\n" ++ "Estado " ++ show i ++ ". En estado " ++ show estadoInicial ++ "\n"
-                                        -- ++ ": [" ++ showState alfabeto (H.lookup estadoInicial maquina) ++ "]\n"
-                                        ++ "Estado " ++ show i ++ ". " ++ mostrarInstruccion maquina alfabeto cinta estadoInicial posicion ++ "\n\n")
+bucle :: Int -> Int ->  Maquina -> Alfabeto -> Cinta -> String -> Int -> IO ()
+bucle i paso maquina alfabeto cinta estadoInicial posicion =
+                           do 
                                let (nuevaCinta, nuevoEstado, newPosition) = ejecutarPaso maquina alfabeto cinta estadoInicial posicion in
-                                   if nuevoEstado == "HALT"
-                                        then putStr ("Estado " ++ show (i+1) ++ ". Cinta: [" ++ mostrarCinta nuevaCinta newPosition "" 0 ++ "]" ++ "\n" ++ "Estado " ++ show (i+1) ++ ". DETENER Programa Completo." ++ "\n")
-                                   else bucle (i+1) maquina alfabeto nuevaCinta nuevoEstado newPosition
+                                   if nuevoEstado == "FIN" && i < paso
+                                        then putStr ("Paso " ++ show (i+1) ++ ".Programa Completo. La maquina no es interesante " ++ "\n")
+                                   else 
+                                        if i == paso 
+                                            then putStr ("Paso " ++ show (i+1) ++ ".Programa Completo. La maquina es interesante " ++ "\n")
+                                        else bucle (i+1) paso maquina alfabeto nuevaCinta nuevoEstado newPosition
 
-mostrarCinta :: Cinta -> Int -> String -> Int -> String
-mostrarCinta [] posicion str i = str
-mostrarCinta (a:cinta) posicion str i
-    | posicion == i = mostrarCinta cinta posicion (str ++ ((obtenerPrefijo i) ++ "*" ++ show a)) (i+1)
-    | otherwise = mostrarCinta cinta posicion (str ++ ((obtenerPrefijo i) ++ show a)) (i+1)
-
-obtenerPrefijo :: Int -> String
-obtenerPrefijo i
-    | i > 0 = ", "
-    | otherwise = ""
-
-agregarCadenaImpresion :: Maybe TMInstruccion -> String -> String -> String
-agregarCadenaImpresion (Just (Instruccion simbolo dir proximoEstado)) readSym str = (str ++ "(read " ++ show readSym ++ ", write " ++ show simbolo ++ ", movimiento " ++ show dir ++ ", proximo estado: " ++ show proximoEstado ++ ") ")
-agregarCadenaImpresion Nothing readSym str = str
-
-mostrarInstruccion maquina alfabeto cinta estadoInicial posicion = mostrarInstruccionAux1 (H.lookup estadoInicial maquina) cinta posicion
-
-mostrarInstruccionAux1 (Just (Estado symTable)) cinta posicion = (mostrarInstruccionAux2 (H.lookup (cinta!!posicion) symTable) (cinta!!posicion))
-
-mostrarInstruccionAux2 (Just (Instruccion escribirSimbolo dir proximoEstado)) readSymbol = ("Instruccion: ( Leyendo  " ++ show readSymbol ++ ", write " ++ show escribirSimbolo ++ ", movimiento " ++ show dir ++ ", proximo estado: " ++ show proximoEstado ++ ")")
 
 -- From: http://stackoverflow.com/questions/10133361/haskell-replace-element-in-list
 remplazarEnIndice :: Int -> String -> [String] -> [String]
@@ -72,24 +53,4 @@ remplazarEnIndice n item ls = a ++ (item:b) where (a, (_:b)) = splitAt n ls
 
 alfabeto = ["", "0", "1"]
 cinta = ["1", "1", "1"]
-maquina = H.fromList [ ("0",Estado (H.fromList [("",Instruccion "" CintaDerecha "1"), ("0",Instruccion "0" CintaIzquierda "0"), ("1",Instruccion "1" CintaIzquierda "0")])),("1",Estado (H.fromList [("",Instruccion "1" CintaIzquierda "2"), ("0",Instruccion "1" CintaDerecha "2"), ("1",Instruccion "0" CintaDerecha "1")])),("2",Estado (H.fromList [("",Instruccion "" CintaDerecha "HALT"), ("0",Instruccion "0" CintaIzquierda "2"), ("1",Instruccion "1" CintaIzquierda "2")]))]
-
---import System.Random
---import System.Random (randomRIO)
-
-
---generateListOfTuples [] = []
---generateListOfTuples ((a,b,c):xs) = (a,b,c):xs
-
- 
---pick :: [a] -> IO a
---pick xs = fmap (xs !!) $ randomRIO (0, length xs - 1)
-
---generateRandomValue :: IO Int
---generateRandomValue = pick [0,1]
-
---generateRandomMovement :: IO [Char]
---generateRandomMovement = pick ["<",">"]
-
---generateRandomState :: IO [Char]
---generateRandomState = pick ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
+maquina = H.fromList [ ("0",Estado (H.fromList [("",Instruccion "" CintaDerecha "1"), ("0",Instruccion "0" CintaIzquierda "0"), ("1",Instruccion "1" CintaIzquierda "0")])),("1",Estado (H.fromList [("",Instruccion "1" CintaIzquierda "2"), ("0",Instruccion "1" CintaDerecha "2"), ("1",Instruccion "0" CintaDerecha "1")])),("2",Estado (H.fromList [("",Instruccion "" CintaDerecha "FIN"), ("0",Instruccion "0" CintaIzquierda "2"), ("1",Instruccion "1" CintaIzquierda "2")]))]
