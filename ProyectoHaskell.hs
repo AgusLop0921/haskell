@@ -21,7 +21,7 @@ ejecutarPaso :: Maquina -> Alfabeto -> Cinta -> String -> Int -> (Cinta, String,
 ejecutarPaso maquina alfabeto cinta estadoInicial posicion = procesarEstado (H.lookup estadoInicial maquina) cinta posicion
 
 procesarEstado :: Maybe TMEstado -> Cinta -> Int -> (Cinta, String, Int)
-procesarEstado (Just (Estado symTable)) cinta posicion = aumenarCinta $ procesarInstruccion (H.lookup (cinta!!posicion) symTable) cinta posicion
+procesarEstado (Just (Estado symTable)) cinta posicion = aumentarCinta $ procesarInstruccion (H.lookup (cinta!!posicion) symTable) cinta posicion
 procesarEstado Nothing cinta posicion = ([""],"FIN",-9)
 
 procesarInstruccion :: Maybe TMInstruccion -> Cinta -> Int -> (Cinta, String,Int)
@@ -30,7 +30,7 @@ procesarInstruccion (Just (Instruccion escribirSimbolo dir proximoEstado)) cinta
     | otherwise = (remplazarEnIndice posicion escribirSimbolo cinta, proximoEstado, (posicion+1))
 
 --Lo unico que hace es verificar si esta en el final o en el principio de la lista, en caso de que asi sea, agrega un elemento al final o al principio.
-aumenarCinta (cinta, proximoEstado, posicion)
+aumentarCinta (cinta, proximoEstado, posicion)
     | posicion < 0 = ([""] ++ cinta, proximoEstado, posicion+1)
     | posicion == (length cinta) = (cinta ++ [""], proximoEstado, posicion)
     | otherwise = (cinta, proximoEstado, posicion)
@@ -46,8 +46,8 @@ ejecutar maquina alfabeto cinta estadoInicial maximaCantidadPasos = bucle 0 maxi
 bucle :: Int -> Int ->  Maquina -> Alfabeto -> Cinta -> String -> Int -> IO ()
 bucle i maximaCantidadPasos maquina alfabeto cinta estadoInicial posicion =
                            do 
-                               let (nuevaCinta, nuevoEstado, newPosition) = ejecutarPaso maquina alfabeto cinta estadoInicial posicion in
-                                 if nuevoEstado == "FIN" && newPosition == -9
+                               let (nuevaCinta, nuevoEstado, nuevaPosicion) = ejecutarPaso maquina alfabeto cinta estadoInicial posicion in
+                                 if nuevoEstado == "FIN" && nuevaPosicion == -9
                                         then putStr ("El estado ingresado no existe en la Maquina de Turing. \n")
                                  else
                                       if nuevoEstado == "FIN" && i < maximaCantidadPasos - 1
@@ -55,7 +55,7 @@ bucle i maximaCantidadPasos maquina alfabeto cinta estadoInicial posicion =
                                       else 
                                             if i == maximaCantidadPasos - 1 
                                                 then putStr ("Cantidad de pasos: " ++ show (i+1) ++ ".Programa Completo. La maquina es interesante " ++ "\n")
-                                            else bucle (i+1) maximaCantidadPasos maquina alfabeto nuevaCinta nuevoEstado newPosition
+                                            else bucle (i+1) maximaCantidadPasos maquina alfabeto nuevaCinta nuevoEstado nuevaPosicion
 
 -- From: http://stackoverflow.com/questions/10133361/haskell-replace-element-in-list
 remplazarEnIndice :: Int -> String -> Cinta -> Cinta
