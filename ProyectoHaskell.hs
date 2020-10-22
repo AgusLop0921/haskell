@@ -13,7 +13,8 @@ data Direccion = CintaDerecha
   deriving (Show, Eq)
 
 type Maquina = (H.HashMap String TMEstado)
-type Cinta = [String]
+type Cinta = [String] --tambien se puede usar seq . para que sea mas facil escribirla
+
 type Alfabeto = [String]
 
 ejecutarPaso :: Maquina -> Alfabeto -> Cinta -> String -> Int -> (Cinta, String, Int)
