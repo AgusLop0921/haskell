@@ -7,3 +7,8 @@ ghci ProyectoHaskell.hs
 Main> ejecutar maquina alfabeto cinta "0" 5
 
 Siendo 5, la cantidad de pasos deseable para que sea a no interesate.
+
+
+Para que funcione el import ejecutar el siguiente comando por terminal:
+
+cabal install unordered-containers --lib
